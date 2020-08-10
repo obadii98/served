@@ -1,14 +1,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:served/AddPost.dart';
+import 'package:served/signin.dart';
 import 'EditProfile.dart';
 import 'UserSearch.dart';
 import 'AddPost.dart';
 import 'Notification.dart';
 import 'Profile.dart';
 import 'UserPage.dart';
-import 'package:convex_bottom_bar/convex_bottom_bar.dart';
-import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert' as convert;
 import 'Resource.dart';
 
 class UserBoard extends StatefulWidget {
@@ -26,14 +28,8 @@ class _UserBoardState extends State<UserBoard> with SingleTickerProviderStateMix
   int _initpge;
   PageController _control;
   PageView _pageView;
-
-//  final userTabs = [
-//    mypage(),
-//    UserSearch(),
-//    AddPost(),
-//    Notifications(),
-//    Profile()
-//  ];
+  String _name;
+  double _points;
 
 
   @override
@@ -69,6 +65,8 @@ class _UserBoardState extends State<UserBoard> with SingleTickerProviderStateMix
         Profile()
       ],
     );
+    _name = "";
+    _points = 0.0;
   }
 
   bool _onWillPop() {
@@ -138,6 +136,11 @@ class _UserBoardState extends State<UserBoard> with SingleTickerProviderStateMix
                   ),
                 ],
                 onTap: (int index){
+                  switch(index){
+                    case 4 :
+                      _setProfile();
+                      break;
+                  }
                   setState(() {
                     _currentIndex = index;
                     _control.animateToPage(index, duration: Duration(milliseconds: 500), curve: Curves.ease);
@@ -202,7 +205,7 @@ class _UserBoardState extends State<UserBoard> with SingleTickerProviderStateMix
                                   letterSpacing: 3.5,
                                   fontFamily: 'Caveat')),
                           actions: <Widget>[
-                            FlatButton(onPressed: (){}, child: Text("POST",style: TextStyle(color: Colors.white,fontSize: 16.0),))
+                            FlatButton(onPressed: (){_post();}, child: Icon(Icons.send, color: Colors.white))
                           ],
                         );
                         _drawer = Text("");
@@ -249,36 +252,43 @@ class _UserBoardState extends State<UserBoard> with SingleTickerProviderStateMix
                               new Column(
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: <Widget>[
-                                  new Padding(
-                                    padding: EdgeInsets.only(top: 20.0),
-                                    child: Row(
-                                      children: <Widget>[
-                                        new Padding(
-                                          padding: EdgeInsets.fromLTRB(10.0, 10.0, 0.0, 0.0),
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                shape: BoxShape.circle,
-                                                image: new DecorationImage(
-                                                    fit: BoxFit.fill,
-                                                    image: new AssetImage("images/profilepic.jpg"))),
-                                            height: 52,
-                                            width: 52,
+                                  new FutureBuilder(
+                                    future: _getDetail(),
+                                    builder: (buildContext,snapshot){
+                                      return Padding(
+                                      padding: EdgeInsets.only(top: 20.0),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        children: <Widget>[
+                                          new Padding(
+                                            padding: EdgeInsets.fromLTRB(10.0, 10.0, 0.0, 0.0),
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  shape: BoxShape.circle,
+                                                  image: new DecorationImage(
+                                                      fit: BoxFit.fill,
+                                                      image: new AssetImage("images/profilepic.jpg"))),
+                                              height: 52,
+                                              width: 52,
+                                            ),
                                           ),
-                                        ),
-                                        new Padding(
-                                          padding: EdgeInsets.fromLTRB(5.0, 0.0, 0.0, 0.0),
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: <Widget>[
-                                              new Text("Obada Baqleh",
-                                                  style: TextStyle(
-                                                      fontSize: 18.0, fontWeight: FontWeight.bold)),
-                                            ],
+                                          new Padding(
+                                            padding: EdgeInsets.fromLTRB(5.0, 0.0, 0.0, 0.0),
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: <Widget>[
+                                                new Text(_name,
+                                                    style: Resource.titTextStyle),
+                                                new Text("$_points",
+                                                    style: Resource.pointTextStyle),
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
+                                        ],
+                                      ),
+                                    );
+                                    }
                                   ),
                                   new Padding(
                                     padding: EdgeInsets.only(top: 5.0),
@@ -314,6 +324,27 @@ class _UserBoardState extends State<UserBoard> with SingleTickerProviderStateMix
                                           new Padding(
                                             padding: EdgeInsets.only(left: 10.0),
                                             child: Text("Saved",style: TextStyle(fontSize: 16.0)),
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  new FlatButton(
+                                    onPressed: ()async{
+                                      SharedPreferences prefs = await SharedPreferences.getInstance();
+                                      prefs.setBool('signedin', false);
+                                      Navigator.of(context).pushReplacement(
+                                          new MaterialPageRoute(builder: (context) => MyApp()));
+                                    },
+                                    child: Container(
+                                      width: _width*(75/100),
+                                      height: _height*(8/100),
+                                      child: Row(
+                                        children: <Widget>[
+                                          new Icon(Icons.close),
+                                          new Padding(
+                                            padding: EdgeInsets.only(left: 10.0),
+                                            child: Text("Sign out",style: TextStyle(fontSize: 16.0)),
                                           )
                                         ],
                                       ),
@@ -363,5 +394,36 @@ class _UserBoardState extends State<UserBoard> with SingleTickerProviderStateMix
               )
           )),
     );
+  }
+
+  void _setProfile() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String _token = prefs.getString('token');
+    var url = 'http://s.served98.com/api/users/myprofail?token=$_token';
+    var response = await http.get(url);
+    Map<String, dynamic> userDetail = convert.jsonDecode(response.body);
+    prefs.setString('name', userDetail["name"]);
+    prefs.setDouble('points', userDetail["points"]);
+    prefs.setDouble('feedback', userDetail["feedback"]);
+    prefs.setDouble('secRate', userDetail["securityRate"]);
+    prefs.setString('country', userDetail["country"]);
+  } //for setting the profile info in shared preferences when pressing the profile
+
+  _getDetail() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _name = prefs.getString('name');
+      if(prefs.getDouble('points') == null)
+        _points = 0.0;
+      else
+        _points = prefs.getDouble('points');
+    });
+  }//for the drawer in profile(photo,name,points)
+
+  Future<void> _post() async {
+//    SharedPreferences prefs = await SharedPreferences.getInstance();
+//    String _token = prefs.getString('token');
+//    var url = 'http://s.served98.com/api/posts?token=$_token';
+//    var response = http.post(url, body: {'title': AddPost., 'typeOfService': data.password})
   }
 }

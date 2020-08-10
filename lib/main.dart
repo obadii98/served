@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:served/UserBoard.dart';
 import 'dart:async';
 import 'IntroPage.dart';
 import 'package:served/Resource.dart';
@@ -20,14 +21,19 @@ class _LoadingState extends State<Loading>{
 
   Future checkFirstSeen() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool _seen = (prefs.getBool('seen') ?? false);
-    if (_seen) {
+    bool _firstdownload = (prefs.getBool('firstdownload') ?? false);
+    bool _signedin = (prefs.getBool('signedin') ?? false);
+    if (_firstdownload == true && _signedin == false) {
       Navigator.of(context).pushReplacement(
           new MaterialPageRoute(builder: (context) => MyApp()));
-    } else {
-      await prefs.setBool('seen', true);
+    } else if (_firstdownload == false && _signedin == false) {
+      await prefs.setBool('firstdownload', true);
       Navigator.of(context).pushReplacement(
           new MaterialPageRoute(builder: (context) => Intro()));
+    }
+    else if (_signedin == true) {
+      Navigator.of(context).pushReplacement(
+          new MaterialPageRoute(builder: (context) => UserBoard()));
     }
   }
 

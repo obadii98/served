@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+
 class Resource {
   static Color primaryColor = Colors.blueGrey[500];
   static Color secondColor = Colors.blueGrey[50];
@@ -24,6 +25,10 @@ class Resource {
   static TextStyle costTextStyle = TextStyle(
     fontSize: 12.0,
     color: Colors.blue[700]
+  );
+  static TextStyle pointTextStyle = TextStyle(
+      fontSize: 16.0,
+      color: Colors.blue[700]
   );
   static TextStyle titTextStyle = TextStyle(
       fontFamily: 'Merriweather', fontSize: 16.0, fontWeight: FontWeight.bold);

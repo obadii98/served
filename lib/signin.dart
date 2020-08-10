@@ -6,6 +6,8 @@ import 'dart:convert' as convert;
 import 'package:served/Resource.dart';
 import 'dart:async';
 import 'package:flutter_login/flutter_login.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 class MyApp extends StatefulWidget {
   @override
@@ -55,29 +57,53 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<String> _authUser(LoginData data) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     print('Name: ${data.name}, Password: ${data.password}');
-//    var url =
-//        'https://sicsf.heliohost.org/public/api/login?api_token=aiW9amqG9ePkXvVkMLsiKMVBmlJvybceFi1g9spZyiBHBBKjjKdmPsmlizrZ';
-//    var response = await http
-//        .post(url, body: {'email': data.name, 'password': data.password});
-//    return Future.delayed(loginTime).then((_) {
-//      if (response.statusCode != 200) {
-//        return 'Username or Password do not match';
-//      }
-//      return null;
-//    });
+    var url =
+        'http://s.served98.com/api/login';
+    var response = await http
+        .post(url, body: {'email': data.name, 'password': data.password});
+    Map<String, dynamic> user = convert.jsonDecode(response.body);
+    String res = user['access_token'];
+    return Future.delayed(loginTime).then((_) {
+      if (response.statusCode != 200) {
+        return "Email or Password dose not match";
+      }
+      prefs.setString('token', res); //saving the token
+      print(prefs.getString('token'));
+      prefs.setBool('signedin', true); //telling the device that the user had signed in
+      _getUserDetails(); //getting the user details to save them
+      return null;
+    });
+  }
+
+
+  void _getUserDetails() async {
+//    SharedPreferences prefs = await SharedPreferences.getInstance();
+//    String _token = prefs.getString('token');
+//    var url = 'http://s.served98.com/api/users/myprofail?token=$_token';
+//    var response = await http.get(url);
+//    Map<String, dynamic> userDetail = convert.jsonDecode(response.body);
+//    prefs.setString('name', userDetail["name"]);
+//    String _name = userDetail["name"];
+//    double _points = userDetail["points"];
+//    double _feedback = userDetail["feedback"];
+//    double _secRate = userDetail["securityRate"];
+//    String _country = userDetail["country"];
+//    Resource.newnew = new User(_name,_points,_feedback,_secRate,_country);
+//    print(Resource.newnew.name);
   }
 
   Future<String> _signup(LoginData data) async {
     print('Name: ${data.name}, Password: ${data.password}');
     String s = data.password;
     var url =
-        'https://sicsf.heliohost.org/public/api/register?api_token=aiW9amqG9ePkXvVkMLsiKMVBmlJvybceFi1g9spZyiBHBBKjjKdmPsmlizrZ';
+        'http://s.served98.com/api/register';
     var response = await http
         .post(url, body: {'email': data.name, 'password': data.password});
     return Future.delayed(loginTime).then((_) {
-      if (response.statusCode == 302) {
-        return 'Username already exist';
+      if (response.statusCode != 200) {
+        return response.statusCode.toString();
       } else {
         return 'Welcome new user';
       }

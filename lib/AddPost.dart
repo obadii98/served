@@ -1,6 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'Resource.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AddPost extends StatefulWidget {
   @override
@@ -8,11 +10,33 @@ class AddPost extends StatefulWidget {
 }
 
 class _AddPostState extends State<AddPost> {
-  String _type = "Type*";
-  String _major = "Major";
-  String _expDate = "Expiration Date";
-  String _from = "From";
-  String _to = "To";
+  static final _titleController = TextEditingController();
+  String _name;
+  int _priceGroup = 1;
+  static int _serviceGroup = 2;
+
+  @override
+  void initState() {
+    _name = "";
+  }
+
+  Future<void> _getDetails() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _name = prefs.getString('name');
+    });
+  } //getting the name for the AddPost page
+
+  static void savingInfo(){
+    String _title = _titleController.text;
+    String _typeOfService;
+    if (_serviceGroup == 1)
+      _typeOfService = "Money Exchange";
+    else if (_serviceGroup == 2)
+      _typeOfService = "Package Transfer";
+    else
+      _typeOfService = "Transport Sharing";
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,45 +70,140 @@ class _AddPostState extends State<AddPost> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      new Text("Obada Baqleh",
-                          style: TextStyle(
-                              fontSize: 18.0, fontWeight: FontWeight.bold)),
-                      new Padding(
-                        padding: EdgeInsets.fromLTRB(5.0, 5.0, 0.0, 0.0),
-                        child: Container(
-                          width: 100.0,
-                          height: 15.0,
-                          child: TextField(
-                            decoration: InputDecoration(
-                                hintText: "add your price*",
-                                hintStyle: TextStyle(fontSize: 14.0)),
-                          ),
-                        ),
-                      )
+                      new FutureBuilder(
+                        future: _getDetails(),
+                        builder: (buildContext,snapshot){
+                          return Text(_name,
+                              style: Resource.titTextStyle);
+                        },
+                      ),
                     ],
                   ),
                 ),
               ],
             ),
+            new Container(
+              width: _width,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  new Row(
+                    children: <Widget>[
+                      new Radio(
+                        value: 1,
+                        groupValue: _priceGroup,
+                        onChanged: (T){
+                          print(T);
+                          _priceGroup=T;
+                        },
+                      ),
+                      new Text("Points", style: Resource.desTextStyle),
+                    ],
+                  ),
+                  new Row(
+                    children: <Widget>[
+                      new Radio(
+                        value: 2,
+                        groupValue: _priceGroup,
+                        onChanged: (T){
+                          print(T);
+                          _priceGroup=T;
+                        },
+                      ),
+                      new Text("Cash",style: Resource.desTextStyle,),
+                    ],
+                  )
+                ],
+              ),
+            ),
+            new TextField(
+              keyboardType: TextInputType.numberWithOptions(),
+              style: Resource.desTextStyle,
+              decoration: InputDecoration(
+                  hintStyle: Resource.desTextStyle,
+                  hintText: "Add a Price*",
+                  contentPadding: EdgeInsets.fromLTRB(10.0, 15.0, 5.0, 0.0)),
+            ),
             new TextField(
               maxLines: 8,
-              style: TextStyle(fontSize: 18.0),
+              style: Resource.desTextStyle,
               decoration: InputDecoration(
-                  hintStyle: TextStyle(fontSize: 18.0),
+                  hintStyle: Resource.desTextStyle,
                   hintText: "What do you need?*",
                   contentPadding: EdgeInsets.fromLTRB(10.0, 15.0, 5.0, 0.0)),
             ),
             new TextField(
-              style: TextStyle(fontSize: 18.0),
+              controller: _titleController,
+              style: Resource.desTextStyle,
               decoration: InputDecoration(
-                  hintStyle: TextStyle(fontSize: 18.0),
+                  hintStyle: Resource.desTextStyle,
                   hintText: "Add a title*",
                   contentPadding: EdgeInsets.fromLTRB(10.0, 15.0, 5.0, 0.0)),
             ),
+            new Container(
+              width: _width,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  new Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      new Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: <Widget>[
+                          new Radio(
+                            value: 1,
+                            groupValue: _serviceGroup,
+                            onChanged: (T){
+                              print(T);
+                              _serviceGroup=T;
+                            },
+                          ),
+                          new Text("Exchange Money", style: Resource.desTextStyle),
+                        ],
+                      ),
+                      new Row(
+                        children: <Widget>[
+                          new Radio(
+                            value: 2,
+                            groupValue: _serviceGroup,
+                            onChanged: (T){
+                              print(T);
+                              _serviceGroup=T;
+                            },
+                          ),
+                          new Text("Package Transfer", style: Resource.desTextStyle),
+                        ],
+                      ),
+                    ],
+                  ),
+                  new Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      new Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          new Radio(
+                            value: 3,
+                            groupValue: _serviceGroup,
+                            onChanged: (T){
+                              print(T);
+                              _serviceGroup=T;
+                            },
+                          ),
+                          new Text("Transport Sharing",style: Resource.desTextStyle)
+                        ],
+                      )
+                    ],
+                  )
+                ],
+              ),
+            ),
             new TextField(
-              style: TextStyle(fontSize: 18.0),
+              style: Resource.hashTextStyle,
               decoration: InputDecoration(
-                  hintStyle: TextStyle(fontSize: 18.0),
+                  hintStyle: Resource.hashTextStyle,
                   hintText: "#exchange_money , #travling , ...",
                   contentPadding: EdgeInsets.fromLTRB(10.0, 15.0, 5.0, 0.0)),
             ),
