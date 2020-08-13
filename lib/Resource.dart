@@ -34,4 +34,14 @@ class Resource {
       fontFamily: 'Merriweather', fontSize: 16.0, fontWeight: FontWeight.bold);
   static TextStyle hashTextStyle = TextStyle(
       fontFamily: 'Merriweather', fontSize: 14.0, fontStyle: FontStyle.italic);
+
+  //for adding post
+  static final titleController = TextEditingController();
+  static final costController = TextEditingController();
+  static final desController = TextEditingController();
+  static int priceGroup = 1;
+  static int serviceGroup = 1;
+  static final postKey = GlobalKey<FormState>();
+
+
 }

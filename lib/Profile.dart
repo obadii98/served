@@ -85,7 +85,10 @@ class _ProfileState extends State<Profile> {
   Future<void> _getProfile() async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      _name = prefs.getString('name');
+      if(prefs.getString('name') == null)
+        _name = "";
+      else
+        _name = prefs.getString('name');
       if(prefs.getString('country') == null)
         _country = "";
       else

@@ -6,6 +6,7 @@ import 'IntroPage.dart';
 import 'package:served/Resource.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'signin.dart';
+import 'package:flutter/services.dart';
 
 void main() => runApp(MaterialApp(
       home: Loading(),
@@ -51,6 +52,10 @@ class _LoadingState extends State<Loading>{
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
     return Scaffold(
       body: Container(
         color: Colors.white,
